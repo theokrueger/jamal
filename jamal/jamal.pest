@@ -1,0 +1,20 @@
+// specials
+WHITESPACE = @{ (" " | "\t")+ }
+
+SINGLE_LINE_COMMENT = _{ "//" ~ ANY* }
+BLOCK_COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+COMMENT = @{ SINGLE_LINE_COMMENT | BLOCK_COMMENT }
+
+// primitives
+// - numbers
+sign = _{ "+" | "-" }
+integer = @{ sign? ~ ASCII_DIGIT+ }
+float = @{ sign? ~ &(ASCII_DIGIT | ("." ~ ASCII_DIGIT)) ~ ASCII_DIGIT*? ~ "."? ~ ASCII_DIGIT*?}
+
+// - strings (are inherently multi-line)
+string_quote = _{ "\"" ~ ((!"\"" | &"\\\"") ~ ANY)* ~ "\"" }
+string_apostrophe = _{ "'" ~ ((!"'" | &"\\'") ~ ANY)* ~ "'" }
+string = @{ string_quote | string_apostrophe }
+
+// 
+//file = { SOI ~ expression* ~ EOI }

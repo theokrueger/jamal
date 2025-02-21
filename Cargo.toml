@@ -1,0 +1,17 @@
+[package]
+name = "JAMAL"
+description = "[J]udicial [A]SCII [M]anipulation [A]bstract [L]anguage. A programming language with a focus on strings."
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "jamal"
+path = "jamal/lib.rs"
+
+[[bin]]
+name = "jamal-interpreter"
+path = "interpreter/main.rs"
+
+[dependencies]
+pest = "2.7"
+pest_derive = "2.7"
