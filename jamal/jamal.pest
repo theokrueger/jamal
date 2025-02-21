@@ -5,7 +5,8 @@ SINGLE_LINE_COMMENT = _{ "//" ~ ANY* }
 BLOCK_COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 COMMENT = @{ SINGLE_LINE_COMMENT | BLOCK_COMMENT }
 
-// primitives
+
+// atomics
 // - numbers
 sign = _{ "+" | "-" }
 integer = @{ sign? ~ ASCII_DIGIT+ }
@@ -16,5 +17,26 @@ string_quote = _{ "\"" ~ ((!"\"" | &"\\\"") ~ ANY)* ~ "\"" }
 string_apostrophe = _{ "'" ~ ((!"'" | &"\\'") ~ ANY)* ~ "'" }
 string = @{ string_quote | string_apostrophe }
 
-// 
+// - booleans
+boolean = @{ "true" | "false" }
+
+// - operators
+numerical_operator = _{ "+" | "-" | "*" | "/" | "^" | "%" }
+boolean_operator = _{ "&&" | "||" | "==" | "!=" }
+operator = @{ numerical_operator | boolean_operator }
+
+// - objects
+reserved = _{ declaration | boolean } // TODO
+object = @{!reserved ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
+
+// expressions
+term = _{ integer | float | boolean | string | object | "(" ~ expression ~ ")"}
+expression = { term ~ (operator ~ term)* }
+
+
+// assignment and declaration
+declaration = _{ "let" | "const" | "var" }
+assignment = { declaration? ~ object ~ "=" ~ expression }
+
 //file = { SOI ~ expression* ~ EOI }
