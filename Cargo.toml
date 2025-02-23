@@ -1,6 +1,6 @@
 [package]
 name = "JAMAL"
-description = "[J]udicial [A]SCII [M]anipulation [A]bstract [L]anguage. A programming language with a focus on strings."
+description = "[J]udgmatic [A]SCII [M]anipulation [A]bstract [L]anguage. A programming language with a focus on strings."
 version = "0.1.0"
 edition = "2021"
 

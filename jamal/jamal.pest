@@ -1,7 +1,7 @@
 // specials
 WHITESPACE = @{ (" " | "\t")+ }
 
-SINGLE_LINE_COMMENT = _{ "//" ~ ANY* }
+SINGLE_LINE_COMMENT = _{ "//" ~ (!NEWLINE ~ ANY)* }
 BLOCK_COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 COMMENT = @{ SINGLE_LINE_COMMENT | BLOCK_COMMENT }
 
@@ -9,8 +9,8 @@ COMMENT = @{ SINGLE_LINE_COMMENT | BLOCK_COMMENT }
 // atomics
 // - numbers
 sign = _{ "+" | "-" }
-integer = @{ sign? ~ ASCII_DIGIT+ }
-float = @{ sign? ~ &(ASCII_DIGIT | ("." ~ ASCII_DIGIT)) ~ ASCII_DIGIT*? ~ "."? ~ ASCII_DIGIT*?}
+integer = @{ sign? ~ ASCII_DIGIT+ ~ ("e" ~ sign? ~ ASCII_DIGIT+)? }
+float = @{ sign? ~ &(ASCII_DIGIT | ("." ~ ASCII_DIGIT)) ~ ASCII_DIGIT*? ~ "."? ~ ASCII_DIGIT*? ~ ("e" ~ sign? ~ ASCII_DIGIT+)?}
 
 // - strings (are inherently multi-line)
 string_quote = _{ "\"" ~ ((!"\"" | &"\\\"") ~ ANY)* ~ "\"" }
@@ -26,7 +26,7 @@ boolean_operator = _{ "&&" | "||" | "==" | "!=" }
 operator = @{ numerical_operator | boolean_operator }
 
 // - objects
-reserved = _{ declaration | boolean } // TODO
+reserved = _{ declaration | boolean }
 object = @{!reserved ~ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
 
@@ -39,4 +39,6 @@ expression = { term ~ (operator ~ term)* }
 declaration = _{ "let" | "const" | "var" }
 assignment = { declaration? ~ object ~ "=" ~ expression }
 
-//file = { SOI ~ expression* ~ EOI }
+
+// file
+file = { SOI ~ (((assignment | expression) ~ ";") | COMMENT | WHITESPACE | NEWLINE)* ~ EOI }

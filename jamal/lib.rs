@@ -1,17 +1,42 @@
+//! JAMAL language
+//!
+//! JAMAL is a string maniuplation-focused language
+//! aimed at making formatting text as easy as possible
+
 use pest::Parser;
 use pest_derive::Parser;
+use std::fs;
+
+mod scope;
+use scope::Scope;
 
 #[derive(Parser)]
 #[grammar = "jamal/jamal.pest"]
-struct JamalParser;
+pub struct JamalParser;
 
-pub struct Jamal {
-      
+pub enum JamalErr {
+        FileReadErr,
+        FileParseErr,
 }
 
-impl Jamal {
-//        pub fn load_file()
+pub struct Jamal {}
 
+impl Jamal {
+        pub fn parse_file(path: String) -> Result<(), JamalErr> {
+                let unparsed = match fs::read_to_string(path) {
+                        Ok(s) => s,
+                        Err(_) => return Err(JamalErr::FileReadErr),
+                };
+
+                let parsed = match JamalParser::parse(Rule::file, &unparsed) {
+                        Ok(f) => f,
+                        Err(e) => return Err(JamalErr::FileParseErr),
+                };
+
+                let root_scope = Scope::new(parsed);
+
+                return Ok(());
+        }
 }
 
 mod tests {
@@ -38,6 +63,15 @@ mod tests {
                 JamalParser::parse(Rule::integer, "0123456789")?;
                 JamalParser::parse(Rule::integer, "+1234")?;
                 JamalParser::parse(Rule::integer, "-1234")?;
+                JamalParser::parse(Rule::integer, "0123456789e123")?;
+                JamalParser::parse(Rule::integer, "+1234e151")?;
+                JamalParser::parse(Rule::integer, "-1234e5123")?;
+                JamalParser::parse(Rule::integer, "0123456789e+123")?;
+                JamalParser::parse(Rule::integer, "+1234e+151")?;
+                JamalParser::parse(Rule::integer, "-1234e+5123")?;
+                JamalParser::parse(Rule::integer, "0123456789e-123")?;
+                JamalParser::parse(Rule::integer, "+1234e-151")?;
+                JamalParser::parse(Rule::integer, "-1234e-5123")?;
                 JamalParser::parse(Rule::integer, "").err().unwrap();
                 JamalParser::parse(Rule::integer, "+").err().unwrap();
                 JamalParser::parse(Rule::integer, "-").err().unwrap();
@@ -48,19 +82,47 @@ mod tests {
                 JamalParser::parse(Rule::float, "0123456789")?;
                 JamalParser::parse(Rule::float, "+1234")?;
                 JamalParser::parse(Rule::float, "-1234")?;
+                JamalParser::parse(Rule::float, "0123456789e99")?;
+                JamalParser::parse(Rule::float, "+1234e421")?;
+                JamalParser::parse(Rule::float, "-1234e344")?;
+                JamalParser::parse(Rule::float, "0123456789e+99")?;
+                JamalParser::parse(Rule::float, "+1234e+421")?;
+                JamalParser::parse(Rule::float, "-1234e+344")?;
+                JamalParser::parse(Rule::float, "0123456789e-99")?;
+                JamalParser::parse(Rule::float, "+1234e-421")?;
+                JamalParser::parse(Rule::float, "-1234e-344")?;
                 // - right side
                 JamalParser::parse(Rule::float, ".0123456789")?;
                 JamalParser::parse(Rule::float, "+.1234")?;
                 JamalParser::parse(Rule::float, "-.1234")?;
+                JamalParser::parse(Rule::float, ".0123456789e69")?;
+                JamalParser::parse(Rule::float, "+.1234e99")?;
+                JamalParser::parse(Rule::float, "-.1234e39")?;
+                JamalParser::parse(Rule::float, ".0123456789e+69")?;
+                JamalParser::parse(Rule::float, "+.1234e+99")?;
+                JamalParser::parse(Rule::float, "-.1234e+39")?;
+                JamalParser::parse(Rule::float, ".0123456789e-69")?;
+                JamalParser::parse(Rule::float, "+.1234e-99")?;
+                JamalParser::parse(Rule::float, "-.1234e-39")?;
                 // - both
                 JamalParser::parse(Rule::float, "514.0123456789")?;
                 JamalParser::parse(Rule::float, "+43421.1234")?;
                 JamalParser::parse(Rule::float, "-54.1234")?;
+                JamalParser::parse(Rule::float, "514.0123456789e99")?;
+                JamalParser::parse(Rule::float, "+43421.1234e12")?;
+                JamalParser::parse(Rule::float, "-54.1234e51")?;
+                JamalParser::parse(Rule::float, "514.0123456789e+99")?;
+                JamalParser::parse(Rule::float, "+43421.1234e+12")?;
+                JamalParser::parse(Rule::float, "-54.1234e+51")?;
+                JamalParser::parse(Rule::float, "514.0123456789e-99")?;
+                JamalParser::parse(Rule::float, "+43421.1234e-12")?;
+                JamalParser::parse(Rule::float, "-54.1234e-51")?;
                 // - neither
                 JamalParser::parse(Rule::float, "").err().unwrap();
                 JamalParser::parse(Rule::float, ".").err().unwrap();
                 JamalParser::parse(Rule::float, "+").err().unwrap();
                 JamalParser::parse(Rule::float, "-").err().unwrap();
+                JamalParser::parse(Rule::float, "e99").err().unwrap();
                 JamalParser::parse(Rule::float, "+.").err().unwrap();
                 JamalParser::parse(Rule::float, "-.").err().unwrap();
                 JamalParser::parse(Rule::float, "object").err().unwrap();
