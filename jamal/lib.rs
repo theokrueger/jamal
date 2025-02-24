@@ -14,9 +14,16 @@ use scope::Scope;
 #[grammar = "jamal/jamal.pest"]
 pub struct JamalParser;
 
+#[derive(Debug)]
 pub enum JamalErr {
         FileReadErr,
         FileParseErr,
+}
+
+impl From<pest::error::Error<Rule>> for JamalErr {
+    fn from(item: pest::error::Error<Rule>) -> Self {
+        return JamalErr::FileParseErr;
+    }
 }
 
 pub struct Jamal {}
@@ -33,7 +40,7 @@ impl Jamal {
                         Err(e) => return Err(JamalErr::FileParseErr),
                 };
 
-                let root_scope = Scope::new(parsed);
+            let root_scope = Scope::new().run(parsed);
 
                 return Ok(());
         }
