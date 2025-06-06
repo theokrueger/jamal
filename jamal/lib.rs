@@ -42,7 +42,7 @@ impl Jamal {
 
             let root_scope = Scope::new().run(parsed);
 
-                return Ok(());
+            return Ok(());
         }
 }
 
@@ -137,6 +137,7 @@ mod tests {
                 // string
                 JamalParser::parse(Rule::string, r#""this is a string with quotes""#)?;
                 JamalParser::parse(Rule::string, r#"'this is a string with apostrophes'"#)?;
+                JamalParser::parse(Rule::string, r#"```this is a string with graves```"#)?;
                 JamalParser::parse(Rule::string, r#""this is a
                                                      multi-line
                                                      string""#)?;
@@ -202,7 +203,6 @@ mod tests {
         fn test_assignment_declaration() -> Result<(), pest::error::Error<Rule>> {
                 JamalParser::parse(Rule::assignment, "let a = fortnite && ((19 || card) + (balls)) / (balls^2)")?;
                 JamalParser::parse(Rule::assignment, r#"const a ="string""#)?;
-                JamalParser::parse(Rule::assignment, r#"var a= "string""#)?;
                 JamalParser::parse(Rule::assignment, r#"a="string""#)?;
                 JamalParser::parse(Rule::assignment, r#"a = "string""#)?;
                 JamalParser::parse(Rule::assignment, "coa=").err().unwrap();

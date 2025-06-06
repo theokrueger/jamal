@@ -15,7 +15,8 @@ float = @{ sign? ~ &(ASCII_DIGIT | ("." ~ ASCII_DIGIT)) ~ ASCII_DIGIT*? ~ "."? ~
 // - strings (are inherently multi-line)
 string_quote = _{ "\"" ~ ((!"\"" | &"\\\"") ~ ANY)* ~ "\"" }
 string_apostrophe = _{ "'" ~ ((!"'" | &"\\'") ~ ANY)* ~ "'" }
-string = @{ string_quote | string_apostrophe }
+string_grave = _{ "```" ~ ((!"`" | &"\\```") ~ ANY)* ~ "```" }
+string = @{ string_quote | string_apostrophe | string_grave }
 
 // - booleans
 boolean = @{ "true" | "false" }
@@ -36,7 +37,7 @@ expression = { term ~ (operator ~ term)* }
 
 
 // assignment and declaration
-declaration = _{ "let" | "const" | "var" }
+declaration = _{ "let" | "const" }
 assignment = { declaration? ~ object ~ "=" ~ expression }
 
 

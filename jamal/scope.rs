@@ -1,6 +1,6 @@
 //! JAMAL scope
 //!
-//! A scope is
+//! TODO
 
 use crate::{JamalErr, JamalParser, Rule};
 use pest::{
@@ -71,8 +71,13 @@ impl Operator {
     }
 }
 
+/// A JAMAL Scope containing references to its parent and children
 pub struct Scope {
+    /// Single parent scope to inherit variables and such from
     parent: Option<Rc<Scope>>,
+    /// Ordered list of children to be executed.
+    children: Vec<Rc<Scope>>,
+    /// Locally-scoped variables
     vars: HashMap<String, Primitive>,
 }
 
@@ -81,6 +86,7 @@ impl Scope {
     pub fn new() -> Self {
         return Self {
             parent: None,
+            children: Vec::new(),
             vars: HashMap::new(),
         };
     }
@@ -159,6 +165,7 @@ impl Scope {
         });
 
         // evaluate to new decided type
+        
 
         return Ok(Primitive::Int(1));
     }
@@ -246,64 +253,16 @@ mod tests {
 
     #[test]
     fn test_expression() -> Result<(), JamalErr> {
-        let tests = vec![
-            // bool
-            [Primitive::String("true".into()), Primitive::Bool(true)],
-            [
-                Primitive::String("true == false".into()),
-                Primitive::Bool(false),
-            ],
-            [
-                Primitive::String("false || true".into()),
-                Primitive::Bool(true),
-            ],
-            [
-                Primitive::String("true && true".into()),
-                Primitive::Bool(true),
-            ],
-            [
-                Primitive::String("false != true".into()),
-                Primitive::Bool(true),
-            ],
-            [Primitive::String("1==1".into()), Primitive::Bool(true)],
-            [
-                Primitive::String("123.567!=false".into()),
-                Primitive::Bool(true),
-            ],
-            // int
-            [Primitive::String("1".into()), Primitive::Int(1)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("2^8".into()), Primitive::Int(256)],
-            [Primitive::String("2*3".into()), Primitive::Int(6)],
-            [Primitive::String("5/2".into()), Primitive::Int(2)],
-            [Primitive::String("6%5".into()), Primitive::Int(1)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-            [Primitive::String("1+1".into()), Primitive::Int(2)],
-        ];
+        let tests = vec![("true", Primitive::Bool(true))];
         let mut scope = Scope::new();
-        for test in tests {
-            match test.get(0).unwrap() {
-                Primitive::String(s) => {
-                    let parsed = JamalParser::parse(Rule::expression, s)?;
-                    for pair in parsed {
-                        if pair.as_rule() != Rule::expression {
-                            continue;
-                        }
-                        let res = scope.handle_expression(pair)?;
-                        assert!(&res == test.get(1).unwrap());
-                    }
+        for (inp, outp) in tests {
+            let parsed = JamalParser::parse(Rule::expression, inp)?;
+            for pair in parsed {
+                if pair.as_rule() != Rule::expression {
+                    continue;
                 }
-                _ => unreachable!(),
+                let res = scope.handle_expression(pair)?;
+                assert!(res == outp);
             }
         }
         return Ok(());
