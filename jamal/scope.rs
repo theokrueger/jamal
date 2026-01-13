@@ -11,7 +11,7 @@ use std::{collections::HashMap, rc::Rc};
 
 /// Primitive types of JAMAL
 /// Sorted by priority low to high
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 enum Primitive {
     Null,
     Bool(bool),
@@ -123,10 +123,8 @@ impl Scope {
     /// i.e. (1+1) -> Integer, (1+1.0) -> Float, (1.0 + "1") -> String
     fn handle_expression(&mut self, expr: Pair<'_, Rule>) -> Result<Primitive, JamalErr> {
         debug_assert!(expr.as_rule() == Rule::expression);
-
-        // convert to infix
-        let mut output = Vec::<Primitive>::with_capacity(3); // TODO choose a better capacity
-        let mut stack = Vec::<Operator>::with_capacity(2); // TODO choose a better capacity
+        let mut output = Vec::<Primitive>::with_capacity(2);
+        let mut stack = Vec::<Operator>::with_capacity(1);
 
         for pair in expr.into_inner() {
             println!("{:?}", pair);
@@ -156,7 +154,7 @@ impl Scope {
             }
         }
 
-        // determine what type it should be. TODO this is slow and memory inefficient (esp. in cases of large strings)
+        // determine what type it should be
         let mut t = Primitive::Null;
         output.into_iter().for_each(|prim| {
             if !t.higher_priority_than(&prim) {
@@ -165,9 +163,8 @@ impl Scope {
         });
 
         // evaluate to new decided type
-        
 
-        return Ok(Primitive::Int(1));
+        return Ok(Primitive::Bool(true));
     }
 
     /// Handle an assignment
@@ -245,15 +242,22 @@ mod tests {
                 var balls = "string";
                 "#,
         )?;
-        let scope = Scope::new().run(parsed);
-        assert!(false);
+        let mut scope = Scope::new();
+        scope.run(parsed);
+        assert_eq!(
+            scope.vars.get("balls").unwrap(),
+            &Primitive::String("string".to_string())
+        );
 
         return Ok(());
     }
 
     #[test]
     fn test_expression() -> Result<(), JamalErr> {
-        let tests = vec![("true", Primitive::Bool(true))];
+        let tests = vec![
+            ("true", Primitive::Bool(true)),
+            ("1 + 1", Primitive::Int(2)),
+        ];
         let mut scope = Scope::new();
         for (inp, outp) in tests {
             let parsed = JamalParser::parse(Rule::expression, inp)?;
